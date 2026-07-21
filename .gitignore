@@ -1,0 +1,17 @@
+node_modules/
+dist/
+out/
+.agents/
+.env
+*.wav
+*.mp4
+*.png
+*.jpeg
+*.jpg
+*.webp
+tmp/
+test_challenge_workspace_*/
+test_challenge_out/
+test_e2e_workspace_*/
+.DS_Store
+Thumbs.db

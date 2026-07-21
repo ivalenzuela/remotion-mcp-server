@@ -1,0 +1,32 @@
+{
+  "name": "remotion-mcp-server",
+  "version": "1.0.0",
+  "description": "Model Context Protocol (MCP) Server for Remotion Video Production",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "remotion-mcp-server": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "start": "node dist/index.js",
+    "test": "node test-e2e-all.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.24.1",
+    "remotion": "^4.0.496",
+    "@remotion/cli": "^4.0.496",
+    "@remotion/transitions": "^4.0.496"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.7.3"
+  }
+}
