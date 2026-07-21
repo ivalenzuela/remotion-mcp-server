@@ -35,14 +35,32 @@ To run this MCP server and render videos, the host environment requires:
 
 ## 📦 Installation & Setup
 
-### 1. Compile the Server
-Clone the repository, install dependencies, and build the TypeScript codebase:
-```bash
-git clone https://github.com/ivanv/remotion-mcp-server.git
-cd remotion-mcp-server
-npm install
-npm run build
-```
+### 🚀 Automated Setup (Recommended)
+
+Run the automated installer inside the cloned repository root:
+
+* **macOS / Linux**:
+  ```bash
+  chmod +x autoinstall.sh
+  ./autoinstall.sh
+  ```
+* **Windows (PowerShell)**:
+  ```powershell
+  Set-ExecutionPolicy Bypass -Scope Process -Force
+  .\autoinstall.ps1
+  ```
+
+This installer automatically compiles the codebase, installs Python packages, ensures Chrome dependencies are loaded, copies the global `SKILL.md` to your optimizations folder, and registers the server configuration to Claude Desktop and Antigravity.
+
+### 🛠️ Manual Installation (Alternative)
+
+1. **Compile the Server**:
+   ```bash
+   git clone https://github.com/ivanv/remotion-mcp-server.git
+   cd remotion-mcp-server
+   npm install
+   npm run build
+   ```
 
 ### 2. Register with your AI Client
 Add the server configuration to your MCP settings file (e.g. `claude_desktop_config.json`, `antigravity.json`, or `.mcp.json`):
