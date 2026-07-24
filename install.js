@@ -2,6 +2,7 @@
 /**
  * Cross-platform Installer for Remotion MCP Server and Global Skill
  * Configures the MCP Server in Claude Desktop / Antigravity / Antigravity IDE and copies the SKILL.md.
+ * Preserves all pre-existing user MCP servers and custom environment variables.
  */
 
 import fs from 'fs';
@@ -120,19 +121,11 @@ targetSkillDirs.forEach(targetSkillDir => {
   }
 });
 
-// 4. Configure MCP Server across all detected MCP config locations
-console.log('\n[4/4] Configuring MCP Server in Client Configs...');
+// 4. Configure MCP Server across all detected MCP config locations without overwriting existing servers
+console.log('\n[4/4] Configuring MCP Server in Client Configs (Preserving existing servers)...');
 
 // Format dist/index.js path with forward slashes for universal compatibility
 const distIndexPath = path.join(PROJECT_DIR, 'dist', 'index.js').replace(/\\/g, '/');
-
-const mcpConfig = {
-  command: 'node',
-  args: [distIndexPath],
-  env: {
-    GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'YOUR_GEMINI_API_KEY_HERE'
-  }
-};
 
 const targetMcpConfigFiles = [
   { name: 'Antigravity Config Global', file: path.join(HOME_DIR, '.gemini', 'config', 'mcp_config.json') },
@@ -157,7 +150,6 @@ let configsUpdated = 0;
 
 targetMcpConfigFiles.forEach(({ name, file }) => {
   const dir = path.dirname(file);
-  // Create config file if it exists, or if its parent dir exists, or if it's primary .gemini/config
   const shouldCreate = fs.existsSync(file) || fs.existsSync(dir) || file.includes('.gemini');
   
   if (shouldCreate) {
@@ -167,7 +159,7 @@ targetMcpConfigFiles.forEach(({ name, file }) => {
       let currentConfig = { mcpServers: {} };
       if (fs.existsSync(file)) {
         try {
-          const content = fs.readFileSync(file, 'utf8').trim();
+          const content = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '').trim();
           if (content) {
             currentConfig = JSON.parse(content);
           }
@@ -177,14 +169,37 @@ targetMcpConfigFiles.forEach(({ name, file }) => {
         }
       }
       
-      if (!currentConfig.mcpServers) {
+      if (!currentConfig || typeof currentConfig !== 'object') {
+        currentConfig = {};
+      }
+      
+      if (!currentConfig.mcpServers || typeof currentConfig.mcpServers !== 'object') {
         currentConfig.mcpServers = {};
       }
       
-      currentConfig.mcpServers.remotion = mcpConfig;
+      // Preserve existing custom GEMINI_API_KEY if already set by user
+      let apiKeyToSet = process.env.GEMINI_API_KEY || 'YOUR_GEMINI_API_KEY_HERE';
+      if (
+        currentConfig.mcpServers.remotion &&
+        currentConfig.mcpServers.remotion.env &&
+        currentConfig.mcpServers.remotion.env.GEMINI_API_KEY &&
+        currentConfig.mcpServers.remotion.env.GEMINI_API_KEY !== 'YOUR_GEMINI_API_KEY_HERE'
+      ) {
+        apiKeyToSet = currentConfig.mcpServers.remotion.env.GEMINI_API_KEY;
+      }
+
+      // Add or update ONLY the "remotion" key. All other existing servers are 100% preserved.
+      currentConfig.mcpServers.remotion = {
+        command: 'node',
+        args: [distIndexPath],
+        env: {
+          GEMINI_API_KEY: apiKeyToSet
+        }
+      };
       
       fs.writeFileSync(file, JSON.stringify(currentConfig, null, 2), 'utf8');
-      console.log(`  ✅ Configured ${name} at: ${file}`);
+      const existingCount = Object.keys(currentConfig.mcpServers).length;
+      console.log(`  ✅ Configured ${name} at: ${file} (Total MCP servers active: ${existingCount})`);
       configsUpdated++;
     } catch (error) {
       console.warn(`  ⚠️ Could not update config for ${name}:`, error.message);
