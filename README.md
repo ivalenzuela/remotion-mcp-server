@@ -33,33 +33,31 @@ To run this MCP server and render videos, the host environment requires:
 
 ---
 
-## 📦 Installation & Setup
+## 📦 Instant One-Command Setup (Recommended)
 
-### 🚀 Automated Setup (Recommended)
+Copy and paste a single command into your terminal to automatically clone, build, install the **Global SKILL**, and configure the **MCP Server** across Antigravity, Antigravity IDE, and Claude Desktop:
 
-Run the automated installer inside the cloned repository root:
+### 🍎 macOS / Linux (Terminal)
+```bash
+curl -fsSL https://raw.githubusercontent.com/ivalenzuela/remotion-mcp-server/main/autoinstall.sh | bash
+```
 
-* **macOS / Linux**:
-  ```bash
-  chmod +x autoinstall.sh
-  ./autoinstall.sh
-  ```
-* **Windows (PowerShell)**:
-  ```powershell
-  Set-ExecutionPolicy Bypass -Scope Process -Force
-  .\autoinstall.ps1
-  ```
+### 🪟 Windows (PowerShell)
+```powershell
+iwr -useb https://raw.githubusercontent.com/ivalenzuela/remotion-mcp-server/main/autoinstall.ps1 | iex
+```
 
-This installer automatically compiles the codebase, installs Python packages, ensures Chrome dependencies are loaded, copies the global `SKILL.md` to your optimizations folder, and registers the server configuration to Claude Desktop and Antigravity.
+> **Zero Configuration Required**: The script automatically detects all Antigravity (`.gemini/`, `.antigravity-ide/`, `.antigravity/`), Claude Desktop, and system paths, installs Python audio dependencies, ensures Chromium is ready, and links the SKILL and MCP server seamlessly.
+
+---
 
 ### 🛠️ Manual Installation (Alternative)
 
 1. **Compile the Server**:
    ```bash
-   git clone https://github.com/ivanv/remotion-mcp-server.git
+   git clone https://github.com/ivalenzuela/remotion-mcp-server.git
    cd remotion-mcp-server
-   npm install
-   npm run build
+   node install.js
    ```
 
 ### 2. Register with your AI Client

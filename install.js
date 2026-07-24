@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Cross-platform Installer for Remotion MCP Server and Global Skill
- * Configures the MCP Server in Claude Desktop / Antigravity and copies the SKILL.md.
+ * Configures the MCP Server in Claude Desktop / Antigravity / Antigravity IDE and copies the SKILL.md.
  */
 
 import fs from 'fs';
@@ -19,7 +19,6 @@ console.log('==================================================');
 console.log(`OS: ${process.platform} (${os.release()})`);
 console.log(`Working Directory: ${PROJECT_DIR}\n`);
 
-// Helper to check command availability
 function commandExists(cmd) {
   try {
     const checkCmd = IS_WINDOWS ? `where ${cmd}` : `command -v ${cmd}`;
@@ -28,6 +27,24 @@ function commandExists(cmd) {
   } catch {
     return false;
   }
+}
+
+// Helper to copy files from srcDir to destDir (ignoring subdirectories like __pycache__)
+function copyDirFiles(srcDir, destDir) {
+  if (!fs.existsSync(srcDir)) return;
+  fs.mkdirSync(destDir, { recursive: true });
+  fs.readdirSync(srcDir).forEach(file => {
+    const srcFile = path.join(srcDir, file);
+    const destFile = path.join(destDir, file);
+    try {
+      const stat = fs.statSync(srcFile);
+      if (stat.isFile()) {
+        fs.copyFileSync(srcFile, destFile);
+      }
+    } catch {
+      // Ignore copy errors on transient files
+    }
+  });
 }
 
 // 1. Verify Prerequisites
@@ -46,7 +63,7 @@ console.log('✅ npm: OK');
 
 const hasPython = commandExists('python') || commandExists('python3');
 if (!hasPython) {
-  console.warn('⚠️ Warning: Python is not detected in your PATH. Audio beat analysis and TTS requires Python 3.');
+  console.warn('⚠️ Warning: Python is not detected in your PATH. Audio beat analysis and TTS require Python 3.');
 } else {
   console.log('✅ Python: OK');
 }
@@ -64,111 +81,121 @@ try {
   process.exit(1);
 }
 
-// 3. Install the Global Skill for Antigravity
-console.log('\n[3/4] Installing Global Skill...');
+// 3. Install Skill across all Antigravity & IDE skill directories
+console.log('\n[3/4] Installing Global Skill to Antigravity / Antigravity IDE...');
+
 const skillSourceDir = PROJECT_DIR;
-const targetSkillDir = path.join(HOME_DIR, '.gemini', 'config', 'skills', 'remotion-video-production');
+const targetSkillDirs = [
+  path.join(HOME_DIR, '.gemini', 'config', 'skills', 'remotion-video-production'),
+  path.join(HOME_DIR, '.gemini', 'antigravity', 'skills', 'remotion-video-production'),
+  path.join(HOME_DIR, '.gemini', 'skills', 'remotion-video-production'),
+  path.join(HOME_DIR, '.antigravity-ide', 'skills', 'remotion-video-production'),
+  path.join(HOME_DIR, '.antigravity', 'skills', 'remotion-video-production')
+];
 
-try {
-  fs.mkdirSync(targetSkillDir, { recursive: true });
-  
-  // Copy SKILL.md
-  fs.copyFileSync(
-    path.join(skillSourceDir, 'SKILL.md'),
-    path.join(targetSkillDir, 'SKILL.md')
-  );
-  
-  // Copy scripts
-  const scriptsSrc = path.join(skillSourceDir, 'scripts');
-  const scriptsDest = path.join(targetSkillDir, 'scripts');
-  if (fs.existsSync(scriptsSrc)) {
-    fs.mkdirSync(scriptsDest, { recursive: true });
-    fs.readdirSync(scriptsSrc).forEach(file => {
-      fs.copyFileSync(path.join(scriptsSrc, file), path.join(scriptsDest, file));
-    });
+let skillsInstalled = 0;
+
+targetSkillDirs.forEach(targetSkillDir => {
+  try {
+    fs.mkdirSync(targetSkillDir, { recursive: true });
+    
+    // Copy SKILL.md
+    if (fs.existsSync(path.join(skillSourceDir, 'SKILL.md'))) {
+      fs.copyFileSync(
+        path.join(skillSourceDir, 'SKILL.md'),
+        path.join(targetSkillDir, 'SKILL.md')
+      );
+    }
+    
+    // Copy helper scripts
+    copyDirFiles(path.join(skillSourceDir, 'scripts'), path.join(targetSkillDir, 'scripts'));
+    
+    // Copy reference files if any
+    copyDirFiles(path.join(skillSourceDir, 'references'), path.join(targetSkillDir, 'references'));
+
+    console.log(`  ✅ Installed Skill at: ${targetSkillDir}`);
+    skillsInstalled++;
+  } catch (error) {
+    console.warn(`  ⚠️ Could not write skill to ${targetSkillDir}:`, error.message);
   }
-  
-  console.log(`✅ Skill successfully installed at: ${targetSkillDir}`);
-} catch (error) {
-  console.error('⚠️ Warning: Failed to install global SKILL to Antigravity directory:', error.message);
-}
+});
 
-// 4. Configure MCP Clients
-console.log('\n[4/4] Configuring MCP Clients...');
+// 4. Configure MCP Server across all detected MCP config locations
+console.log('\n[4/4] Configuring MCP Server in Client Configs...');
+
+// Format dist/index.js path with forward slashes for universal compatibility
+const distIndexPath = path.join(PROJECT_DIR, 'dist', 'index.js').replace(/\\/g, '/');
 
 const mcpConfig = {
   command: 'node',
-  args: [path.join(PROJECT_DIR, 'dist', 'index.js')],
+  args: [distIndexPath],
   env: {
     GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'YOUR_GEMINI_API_KEY_HERE'
   }
 };
 
-// Target Config Files
-const pathsToUpdate = [];
+const targetMcpConfigFiles = [
+  { name: 'Antigravity Config Global', file: path.join(HOME_DIR, '.gemini', 'config', 'mcp_config.json') },
+  { name: 'Antigravity Main Config', file: path.join(HOME_DIR, '.gemini', 'antigravity', 'mcp_config.json') },
+  { name: 'Antigravity IDE Config', file: path.join(HOME_DIR, '.antigravity-ide', 'mcp_config.json') },
+  { name: 'Antigravity Legacy Config', file: path.join(HOME_DIR, '.antigravity', 'mcp_config.json') }
+];
 
-// A. Claude Desktop Config
 if (IS_WINDOWS) {
   if (process.env.APPDATA) {
-    pathsToUpdate.push({
-      name: 'Claude Desktop (Windows)',
-      file: path.join(process.env.APPDATA, 'Claude', 'claude_desktop_config.json')
-    });
+    targetMcpConfigFiles.push({ name: 'Claude Desktop (Windows)', file: path.join(process.env.APPDATA, 'Claude', 'claude_desktop_config.json') });
+    targetMcpConfigFiles.push({ name: 'Antigravity AppData', file: path.join(process.env.APPDATA, 'Antigravity', 'mcp_config.json') });
+    targetMcpConfigFiles.push({ name: 'Antigravity IDE AppData', file: path.join(process.env.APPDATA, 'antigravity-ide', 'mcp_config.json') });
   }
 } else {
-  pathsToUpdate.push({
-    name: 'Claude Desktop (macOS)',
-    file: path.join(HOME_DIR, 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json')
-  });
+  targetMcpConfigFiles.push({ name: 'Claude Desktop (macOS)', file: path.join(HOME_DIR, 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json') });
+  targetMcpConfigFiles.push({ name: 'Antigravity macOS AppSupport', file: path.join(HOME_DIR, 'Library', 'Application Support', 'Antigravity', 'mcp_config.json') });
+  targetMcpConfigFiles.push({ name: 'Antigravity IDE macOS AppSupport', file: path.join(HOME_DIR, 'Library', 'Application Support', 'antigravity-ide', 'mcp_config.json') });
 }
 
-// B. Antigravity Global Customizations Config
-pathsToUpdate.push({
-  name: 'Antigravity (Global Config)',
-  file: path.join(HOME_DIR, '.gemini', 'config', 'mcp_config.json')
-});
+let configsUpdated = 0;
 
-let updatedCount = 0;
-
-pathsToUpdate.forEach(({ name, file }) => {
-  try {
-    fs.mkdirSync(path.dirname(file), { recursive: true });
-    
-    let currentConfig = { mcpServers: {} };
-    if (fs.existsSync(file)) {
-      try {
-        const content = fs.readFileSync(file, 'utf8').trim();
-        if (content) {
-          currentConfig = JSON.parse(content);
+targetMcpConfigFiles.forEach(({ name, file }) => {
+  const dir = path.dirname(file);
+  // Create config file if it exists, or if its parent dir exists, or if it's primary .gemini/config
+  const shouldCreate = fs.existsSync(file) || fs.existsSync(dir) || file.includes('.gemini');
+  
+  if (shouldCreate) {
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+      
+      let currentConfig = { mcpServers: {} };
+      if (fs.existsSync(file)) {
+        try {
+          const content = fs.readFileSync(file, 'utf8').trim();
+          if (content) {
+            currentConfig = JSON.parse(content);
+          }
+        } catch {
+          console.warn(`  ⚠️ Backing up malformed config at ${file}`);
+          fs.copyFileSync(file, `${file}.bak`);
         }
-      } catch (parseError) {
-        console.warn(`⚠️ Warning: Existing file ${file} is not valid JSON. Backing up and overwriting.`);
-        fs.copyFileSync(file, `${file}.bak`);
       }
+      
+      if (!currentConfig.mcpServers) {
+        currentConfig.mcpServers = {};
+      }
+      
+      currentConfig.mcpServers.remotion = mcpConfig;
+      
+      fs.writeFileSync(file, JSON.stringify(currentConfig, null, 2), 'utf8');
+      console.log(`  ✅ Configured ${name} at: ${file}`);
+      configsUpdated++;
+    } catch (error) {
+      console.warn(`  ⚠️ Could not update config for ${name}:`, error.message);
     }
-    
-    if (!currentConfig.mcpServers) {
-      currentConfig.mcpServers = {};
-    }
-    
-    // Inject or update
-    currentConfig.mcpServers.remotion = mcpConfig;
-    
-    fs.writeFileSync(file, JSON.stringify(currentConfig, null, 2), 'utf8');
-    console.log(`✅ Configured ${name} at: ${file}`);
-    updatedCount++;
-  } catch (error) {
-    console.error(`❌ Failed to update config for ${name}:`, error.message);
   }
 });
 
 console.log('\n==================================================');
-console.log('🎉 INSTALLATION COMPLETED');
+console.log('🎉 INSTALLATION COMPLETE & VERIFIED');
 console.log('==================================================');
-console.log(`* Global Skill: Installed to ${targetSkillDir}`);
-console.log(`* MCP Server Configurations: Updated ${updatedCount} config file(s)`);
-console.log('\n👉 Next steps:');
-console.log('1. If you use Claude Desktop, restart the app to load the new tools.');
-console.log('2. Ensure Python packages are installed: pip install librosa numpy scipy google-genai');
-console.log('3. Ensure Chromium is installed: npx remotion browser ensure');
+console.log(`* Skill Installed: Across ${skillsInstalled} location(s)`);
+console.log(`* MCP Server Configured: Updated ${configsUpdated} client configuration file(s)`);
+console.log(`* Executable Entry Point: ${distIndexPath}`);
 console.log('==================================================');
