@@ -101,8 +101,8 @@ export async function handleGenerateTts(input: GenerateTtsInput): Promise<Genera
       success: false,
       code: 'ERR_INVALID_INPUT',
       errorCode: 'ERR_INVALID_INPUT',
-      error: `Invalid generate_tts input: ${parseResult.error.errors
-        .map((e) => `${e.path.join('.')}: ${e.message}`)
+      error: `Invalid generate_tts input: ${parseResult.error.issues
+        .map((e: any) => `${e.path.join('.')}: ${e.message}`)
         .join('; ')}`,
     };
   }

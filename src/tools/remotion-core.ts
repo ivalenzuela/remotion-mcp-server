@@ -19,7 +19,7 @@ export const PreviewFrameSchema = z.object({
   outputPath: z.string().optional(),
   imageFormat: z.enum(['png', 'jpeg', 'webp']).optional().default('png'),
   scale: z.number().positive().optional().default(1),
-  props: z.record(z.unknown()).optional(),
+  props: z.record(z.string(), z.unknown()).optional(),
   timeoutMs: z.number().positive().optional().default(180000),
 });
 
@@ -33,7 +33,7 @@ export const RenderVideoSchema = z.object({
   pixelFormat: z.string().optional().default('yuv420p'),
   audioBitrate: z.string().optional(),
   gl: z.string().optional(),
-  props: z.record(z.unknown()).optional(),
+  props: z.record(z.string(), z.unknown()).optional(),
   timeoutMs: z.number().positive().optional().default(300000),
 });
 
@@ -107,7 +107,7 @@ export async function handleScaffoldProject(input: ScaffoldProjectInput) {
       success: false,
       code: 'ERR_INVALID_INPUT',
       errorCode: 'ERR_INVALID_INPUT',
-      error: `Invalid scaffold parameters: ${parseResult.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join('; ')}`,
+      error: `Invalid scaffold parameters: ${parseResult.error.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join('; ')}`,
     };
   }
   const { projectName, template, targetDir } = parseResult.data;
@@ -172,7 +172,7 @@ export async function handlePreviewFrame(input: PreviewFrameInput) {
       success: false,
       code: 'ERR_INVALID_INPUT',
       errorCode: 'ERR_INVALID_INPUT',
-      error: `Invalid preview parameters: ${parseResult.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join('; ')}`,
+      error: `Invalid preview parameters: ${parseResult.error.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join('; ')}`,
     };
   }
   const {
@@ -270,7 +270,7 @@ export async function handleRenderVideo(input: RenderVideoInput) {
       success: false,
       code: 'ERR_INVALID_INPUT',
       errorCode: 'ERR_INVALID_INPUT',
-      error: `Invalid render parameters: ${parseResult.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join('; ')}`,
+      error: `Invalid render parameters: ${parseResult.error.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join('; ')}`,
     };
   }
   const {

@@ -90,7 +90,7 @@ export async function handleAnalyzeAudio(input: AnalyzeAudioInput): Promise<Audi
       success: false,
       code: 'ERR_INVALID_INPUT',
       errorCode: 'ERR_INVALID_INPUT',
-      error: `Invalid analyze_audio input: ${parseResult.error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join('; ')}`,
+      error: `Invalid analyze_audio input: ${parseResult.error.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join('; ')}`,
     };
   }
 

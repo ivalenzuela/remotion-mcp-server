@@ -21,10 +21,10 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "zod": "^3.24.1",
-    "remotion": "^4.0.496",
-    "@remotion/cli": "^4.0.496",
-    "@remotion/transitions": "^4.0.496"
+    "@remotion/cli": "4.0.496",
+    "@remotion/transitions": "4.0.496",
+    "remotion": "4.0.496",
+    "zod": "4.3.6"
   },
   "devDependencies": {
     "@types/node": "^22.10.1",

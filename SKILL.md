@@ -496,3 +496,28 @@ Comprehensive documentation of `references/remotion_creative_mastery.md`, coveri
   3. **Release Phase**: Restores music to `nominalMusicVolume` over `releaseFrames`.
 - Overlapping segments evaluate composite maximum ducking strength:
   $$S_{\text{max}}(f) = \max_i S_i(f)$$
+
+---
+
+## 12. Remotion Dependency & Zod Version Guidelines
+
+To prevent `Version mismatch` runtime warnings or errors during `remotion studio`, `remotion render`, or `remotion still`:
+
+1. **Remove Carets (`^`)**: Always pin Remotion dependencies to exact version numbers without the `^` prefix:
+   ```json
+   "dependencies": {
+     "remotion": "4.0.496",
+     "@remotion/cli": "4.0.496",
+     "@remotion/transitions": "4.0.496",
+     "@remotion/media": "4.0.496",
+     "@remotion/media-utils": "4.0.496"
+   }
+   ```
+2. **Exact Zod Pinning**: Pin Zod to exact version `"zod": "4.3.6"` as expected by Remotion v4:
+   ```json
+   "dependencies": {
+     "zod": "4.3.6"
+   }
+   ```
+3. **Automated Fix Command**: If a mismatch occurs in any sub-project, execute `npx remotion add zod` or update `package.json` to lock `"zod": "4.3.6"`.
+
