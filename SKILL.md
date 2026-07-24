@@ -458,7 +458,7 @@ export const ProofOverlay = () => (
 ### Additional Templates Overview
 
 4. **`LowerThird`**: Displays speaker names, titles, and social handle callout cards with frosted glass backgrounds.
-5. **`SubtitleOverlay`**: Renders word-by-word kinetic text overlays with active word scaling, glow highlights, and SRT timecode synchronization.
+5. **`SubtitleOverlay`**: Renders word-by-word kinetic text overlays and bilingual dual-language captions (`textEn` + `textEs`) with proportional cross-language word indexing, spring pop physics (`damping: 18`, `stiffness: 120`), `#ffe600` active word glow, and Google Fonts (`Outfit` & `Montserrat`) injection.
 6. **`AudioSpectrum`**: Visualizes live audio waveforms as dynamic vertical EQ bars driven by frequency energy.
 7. **`KenBurnsImage`**: Applies smooth pan-and-zoom keyframe movement to still photos.
 

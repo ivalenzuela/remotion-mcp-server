@@ -991,3 +991,111 @@ export const AudioDuckingComposition: React.FC<AudioDuckingCompositionProps> = (
    $$V_{\text{music}}(f) = V_{\text{nominal}} - S_{\text{max}}(f) \cdot (V_{\text{nominal}} - V_{\text{ducked}})$$
 
 ---
+
+## Domain 6: Bilingual Proportional Subtitle Synchronization (Sony Vegas Remotion Architecture)
+
+### Architectural Principle
+When generating bilingual video content (e.g. English audio + Spanish translated subtitles), word-level timecodes are frequently only available for the original spoken audio (English). The **Bilingual Proportional Subtitle Architecture** maps word-by-word timecodes proportionally across translated language word arrays using relative index scaling:
+
+$$\text{Idx}_{\text{target}} = \text{round}\left( \frac{\text{Idx}_{\text{source}}}{N_{\text{source}} - 1} \cdot (N_{\text{target}} - 1) \right)$$
+
+### Layout Structure
+1. **Secondary Line (Secondary Language / English)**: Flat, subtle overlay (`fontSize: 22`, `color: 'rgba(255, 255, 255, 0.75)'`, text shadow stroke).
+2. **Primary Line (Target Language / Spanish)**: Kinetic karaoke text (`fontSize: 36`, `fontWeight: 900`) with 3 distinct word state colors and soft spring physics (`damping: 18`, `stiffness: 120`).
+
+### Production Code Snippet
+```tsx
+import React from 'react';
+import { interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
+
+export interface WordItem {
+  text: string;
+  fromFrame: number;
+  toFrame: number;
+}
+
+export interface SubtitleItem {
+  id: number;
+  fromFrame: number;
+  toFrame: number;
+  durationInFrames: number;
+  textEn: string;
+  textEs: string;
+  words?: WordItem[];
+}
+
+export const BilingualSubtitleOverlay: React.FC<{ subtitles: SubtitleItem[] }> = ({ subtitles }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  const activeSub = subtitles.find(sub => frame >= sub.fromFrame && frame <= sub.toFrame);
+  if (!activeSub) return null;
+
+  const currentFrameInSub = frame - activeSub.fromFrame;
+  const subDuration = activeSub.durationInFrames;
+
+  const spr = spring({
+    frame: currentFrameInSub,
+    fps,
+    config: { damping: 14, mass: 0.4 },
+  });
+
+  const opacity = interpolate(
+    currentFrameInSub,
+    [0, 4, Math.max(5, subDuration - 4), subDuration],
+    [0, 1, 1, 0],
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+  );
+
+  const translateY = interpolate(spr, [0, 1], [15, 0]);
+
+  const wordsEn = activeSub.words;
+  const wordsEs = activeSub.textEs.split(' ');
+
+  let activeWordIdxEn = 0;
+  if (wordsEn && wordsEn.length > 0) {
+    activeWordIdxEn = wordsEn.findIndex(w => frame >= w.fromFrame && frame <= w.toFrame);
+    if (activeWordIdxEn === -1) {
+      const lastSpoken = wordsEn.filter(w => frame > w.toFrame).length;
+      activeWordIdxEn = Math.min(wordsEn.length - 1, lastSpoken);
+    }
+  }
+
+  const totalEnCount = wordsEn ? wordsEn.length : activeSub.textEn.split(' ').length;
+  const activeWordIdxEs = totalEnCount > 1
+    ? Math.min(wordsEs.length - 1, Math.floor((activeWordIdxEn / (totalEnCount - 1)) * wordsEs.length))
+    : 0;
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        bottom: 45,
+        left: 0, right: 0,
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        opacity, transform: `translateY(${translateY}px)`,
+        padding: '0 40px', pointerEvents: 'none',
+      }}
+    >
+      <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 10, color: 'rgba(255, 255, 255, 0.75)' }}>
+        {activeSub.textEn}
+      </div>
+      <div style={{ fontSize: 36, fontWeight: 900, display: 'flex', flexWrap: 'wrap', gap: '4px 10px' }}>
+        {wordsEs.map((word, i) => {
+          const isCurrent = i === activeWordIdxEs;
+          const isHighlighted = i <= activeWordIdxEs;
+          const color = isCurrent ? '#ffe600' : isHighlighted ? '#ffffff' : 'rgba(255, 255, 255, 0.4)';
+          return (
+            <span key={i} style={{ color, display: 'inline-block' }}>
+              {word}
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+```
+
+
+---
