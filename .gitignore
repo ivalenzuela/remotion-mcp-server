@@ -2,6 +2,9 @@ node_modules/
 dist/
 out/
 .agents/
+ORIGINAL_REQUEST.md
+__pycache__/
+*.pyc
 .env
 *.wav
 *.mp4

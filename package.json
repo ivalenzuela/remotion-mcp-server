@@ -13,7 +13,7 @@
     "start": "node dist/index.js",
     "test": "node test-e2e-all.js"
   },
-  "author": "Iván Valenzuela <ivalenzuela@ntic.cl>",
+  "author": "Iván Valenzuela",
   "license": "MIT",
   "repository": {
     "type": "git",

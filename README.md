@@ -68,7 +68,7 @@ Add the server configuration to your MCP settings file (e.g. `claude_desktop_con
   "mcpServers": {
     "remotion": {
       "command": "node",
-      "args": ["C:/Users/ivanv/PycharmProjects/remotion-mcp-server/dist/index.js"],
+      "args": ["/path/to/remotion-mcp-server/dist/index.js"],
       "env": {
         "GEMINI_API_KEY": "YOUR_GEMINI_API_KEY_HERE"
       }
