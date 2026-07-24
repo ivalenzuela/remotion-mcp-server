@@ -3,3 +3,6 @@ export { SubtitleOverlay } from './SubtitleOverlay.js';
 export type { SubtitleOverlayProps, SubtitleItem, WordTimecode as SubtitleWordTimecode } from './SubtitleOverlay.js';
 export * from './AudioSpectrum.js';
 export * from './LowerThird.js';
+export * from './ProgressBar.js';
+export * from './BeforeAfterSlider.js';
+export * from './TrustBadge.js';
