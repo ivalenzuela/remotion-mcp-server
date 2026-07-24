@@ -1,4 +1,4 @@
-# autoinstall.ps1 — One-line automated installer for Windows PowerShell
+# autoinstall.ps1 — One-line automated installer for Windows PowerShell with Auto-Dependency Installation
 # Usage: iwr -useb https://raw.githubusercontent.com/ivalenzuela/remotion-mcp-server/main/autoinstall.ps1 | iex
 
 $ErrorActionPreference = "Continue"
@@ -7,23 +7,55 @@ Write-Host "==================================================" -ForegroundColor
 Write-Host "   REMOTION MCP SERVER & SKILL — AUTO INSTALLER   " -ForegroundColor Cyan
 Write-Host "==================================================" -ForegroundColor Cyan
 
-# 1. Verify Git, Node, and npm
+function Refresh-Path {
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+}
+
+function Install-WithWingetOrChoco($wingetId, $chocoName) {
+    if (Get-Command "winget" -ErrorAction SilentlyContinue) {
+        Write-Host "Installing $wingetId via Winget..." -ForegroundColor Yellow
+        winget install --id $wingetId -e --source winget --accept-package-agreements --accept-source-agreements --silent
+    } elseif (Get-Command "choco" -ErrorAction SilentlyContinue) {
+        Write-Host "Installing $chocoName via Chocolatey..." -ForegroundColor Yellow
+        choco install $chocoName -y
+    } else {
+        Write-Host "Winget/Choco not found. Auto-installing Chocolatey..." -ForegroundColor Yellow
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+        Refresh-Path
+        choco install $chocoName -y
+    }
+    Refresh-Path
+}
+
+# 1. Check & Auto-Install Git
 if (-not (Get-Command "git" -ErrorAction SilentlyContinue)) {
-    Write-Host "❌ Error: git is required but not installed. Please install Git for Windows." -ForegroundColor Red
-    Exit 1
+    Write-Host "📦 Git not detected. Auto-installing Git..." -ForegroundColor Yellow
+    Install-WithWingetOrChoco "Git.Git" "git"
 }
+Write-Host "✅ Git: OK" -ForegroundColor Green
 
-if (-not (Get-Command "node" -ErrorAction SilentlyContinue)) {
-    Write-Host "❌ Error: Node.js is required but not installed. Please install Node.js from https://nodejs.org/" -ForegroundColor Red
-    Exit 1
+# 2. Check & Auto-Install Node.js & npm
+if ((-not (Get-Command "node" -ErrorAction SilentlyContinue)) -or (-not (Get-Command "npm" -ErrorAction SilentlyContinue))) {
+    Write-Host "📦 Node.js / npm not detected. Auto-installing Node.js..." -ForegroundColor Yellow
+    Install-WithWingetOrChoco "OpenJS.NodeJS" "nodejs"
 }
+Write-Host "✅ Node.js & npm: OK" -ForegroundColor Green
 
-if (-not (Get-Command "npm" -ErrorAction SilentlyContinue)) {
-    Write-Host "❌ Error: npm is required but not installed." -ForegroundColor Red
-    Exit 1
+# 3. Check & Auto-Install Python
+if (-not (Get-Command "python" -ErrorAction SilentlyContinue)) {
+    Write-Host "📦 Python not detected. Auto-installing Python 3..." -ForegroundColor Yellow
+    Install-WithWingetOrChoco "Python.Python.3.12" "python3"
 }
+Write-Host "✅ Python: OK" -ForegroundColor Green
 
-# 2. Determine target repository directory
+# Install Python audio & AI packages
+Write-Host "`n[1/3] Installing Python audio & AI dependencies (librosa, numpy, scipy, google-genai)..." -ForegroundColor Yellow
+python -m pip install --upgrade pip --quiet
+python -m pip install librosa numpy scipy google-genai --quiet
+Write-Host "✅ Python packages ready." -ForegroundColor Green
+
+# 4. Determine target repository directory
 $RepoUrl = "https://github.com/ivalenzuela/remotion-mcp-server.git"
 $TargetDir = ""
 
@@ -44,18 +76,7 @@ if ((Test-Path "package.json") -and (Select-String -Path "package.json" -Pattern
     }
 }
 
-# 3. Check Python and install required libraries
-Write-Host "`n[1/3] Checking Python Dependencies..." -ForegroundColor Yellow
-if (Get-Command "python" -ErrorAction SilentlyContinue) {
-    Write-Host "Installing Python audio & AI packages (librosa, numpy, scipy, google-genai)..."
-    python -m pip install --upgrade pip --quiet
-    python -m pip install librosa numpy scipy google-genai --quiet
-    Write-Host "✅ Python dependencies ready." -ForegroundColor Green
-} else {
-    Write-Host "⚠️ Warning: python is not found. Audio beat sync and Gemini TTS will require Python 3." -ForegroundColor Yellow
-}
-
-# 4. Ensure Remotion Browser
+# 5. Ensure Remotion Browser
 Write-Host "`n[2/3] Verifying Remotion Browser Dependencies..." -ForegroundColor Yellow
 try {
     npx remotion browser ensure
@@ -63,7 +84,7 @@ try {
     Write-Host "⚠️ Warning: Browser check skipped." -ForegroundColor Yellow
 }
 
-# 5. Run Node.js Installer Engine
+# 6. Run Node.js Installer Engine
 Write-Host "`n[3/3] Running Skill & MCP Config Installer..." -ForegroundColor Yellow
 node install.js
 

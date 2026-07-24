@@ -35,7 +35,7 @@ To run this MCP server and render videos, the host environment requires:
 
 ## 📦 Instant One-Command Setup (Recommended)
 
-Copy and paste a single command into your terminal to automatically clone, build, install the **Global SKILL**, and configure the **MCP Server** across Antigravity, Antigravity IDE, and Claude Desktop:
+Copy and paste a single command into your terminal. **If Git, Node.js, npm, or Python are missing, the script will automatically install them for you!**
 
 ### 🍎 macOS / Linux (Terminal)
 ```bash
@@ -47,7 +47,7 @@ curl -fsSL https://raw.githubusercontent.com/ivalenzuela/remotion-mcp-server/mai
 iwr -useb https://raw.githubusercontent.com/ivalenzuela/remotion-mcp-server/main/autoinstall.ps1 | iex
 ```
 
-> **Zero Configuration Required**: The script automatically detects all Antigravity (`.gemini/`, `.antigravity-ide/`, `.antigravity/`), Claude Desktop, and system paths, installs Python audio dependencies, ensures Chromium is ready, and links the SKILL and MCP server seamlessly.
+> **Zero Manual Intervention**: The script automatically detects missing prerequisites (Git, Node.js, npm, Python 3) and installs them via Homebrew / Winget / Chocolatey. It then scans all Antigravity (`.gemini/`, `.antigravity-ide/`, `.antigravity/`), Claude Desktop, and system paths, installs Python audio dependencies, ensures Chromium is ready, and links the SKILL and MCP server seamlessly.
 
 ---
 
