@@ -1,5 +1,5 @@
 import React from 'react';
-import { interpolate, spring, useCurrentFrame, useVideoConfig, Img, staticFile } from 'remotion';
+import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig, Img, staticFile } from 'remotion';
 
 export type PanDirection =
   | 'top-left-to-bottom-right'
@@ -145,13 +145,10 @@ export const KenBurnsImage: React.FC<KenBurnsImageProps> = ({
     : undefined;
 
   return (
-    <div
+    <AbsoluteFill
       style={{
-        width: '100%',
-        height: '100%',
         overflow: 'hidden',
-        position: 'relative',
-        backgroundColor: '#090d16',
+        backgroundColor: '#000000',
         ...style,
       }}
     >
@@ -172,7 +169,7 @@ export const KenBurnsImage: React.FC<KenBurnsImageProps> = ({
           style={{
             width: '100%',
             height: '100%',
-            background: 'radial-gradient(circle at 50% 40%, #1e293b 0%, #0f172a 70%, #020617 100%)',
+            backgroundColor: '#111827',
             transform: `translate3d(${translateX}px, ${translateY}px, 0px) scale(${scale})`,
           }}
         />
@@ -187,6 +184,7 @@ export const KenBurnsImage: React.FC<KenBurnsImageProps> = ({
           }}
         />
       )}
-    </div>
+    </AbsoluteFill>
   );
 };
+

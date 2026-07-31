@@ -1,5 +1,5 @@
 import React from 'react';
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
+import { interpolate, spring, useCurrentFrame, useVideoConfig, Img, staticFile } from 'remotion';
 
 export interface LowerThirdProps {
   /** Main title / presenter name */
@@ -10,7 +10,7 @@ export interface LowerThirdProps {
   handle?: string;
   /** Optional avatar image path */
   avatarUrl?: string;
-  /** Accent brand color */
+  /** Accent color (default: '#ffffff') */
   brandColor?: string;
   /** Alias for brandColor */
   accentColor?: string;
@@ -26,7 +26,7 @@ export const LowerThird: React.FC<LowerThirdProps> = ({
   handle,
   avatarUrl,
   brandColor,
-  accentColor = '#38bdf8',
+  accentColor = '#ffffff',
   startFrame = 0,
   durationInFrames = 150,
 }) => {
@@ -42,69 +42,77 @@ export const LowerThird: React.FC<LowerThirdProps> = ({
   const entranceSpr = spring({
     frame: localFrame,
     fps,
-    config: { damping: 14, mass: 0.5 },
+    config: { damping: 16, mass: 0.6 },
   });
 
   // Exit spring animation (triggers during final 15 frames)
   const exitStart = Math.max(0, durationInFrames - 15);
   const exitFrame = Math.max(0, localFrame - exitStart);
   const exitSpr = localFrame >= exitStart
-    ? spring({ frame: exitFrame, fps, config: { damping: 15, mass: 0.5 } })
+    ? spring({ frame: exitFrame, fps, config: { damping: 16, mass: 0.6 } })
     : 0;
 
   const opacity = interpolate(entranceSpr, [0, 1], [0, 1]) - interpolate(exitSpr, [0, 1], [0, 1]);
-  const translateX = interpolate(entranceSpr, [0, 1], [-120, 0]) + interpolate(exitSpr, [0, 1], [0, -120]);
+  const translateY = interpolate(entranceSpr, [0, 1], [20, 0]) + interpolate(exitSpr, [0, 1], [0, 20]);
 
   // Staggered title/subtitle entry
   const textSpr = spring({
     frame: Math.max(0, localFrame - 3),
     fps,
-    config: { damping: 12, mass: 0.4 },
+    config: { damping: 14, mass: 0.4 },
   });
   const textOpacity = interpolate(textSpr, [0, 1], [0, 1]);
+
+  const resolvePath = (src?: string) => {
+    if (!src) return null;
+    return src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:')
+      ? src
+      : staticFile(src);
+  };
+
+  const avatarSrc = resolvePath(avatarUrl);
 
   return (
     <div
       style={{
         position: 'absolute',
-        bottom: '12%',
-        left: '5%',
+        bottom: '10%',
+        left: '6%',
         display: 'flex',
         alignItems: 'center',
         gap: 16,
-        padding: '16px 28px',
-        backgroundColor: 'rgba(15, 23, 42, 0.92)',
-        backdropFilter: 'blur(14px)',
-        borderLeft: `5px solid ${effectiveAccent}`,
-        borderRadius: '0 16px 16px 0',
-        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)',
+        padding: '12px 20px',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        backdropFilter: 'blur(12px)',
+        borderRadius: 12,
         opacity: Math.max(0, opacity),
-        transform: `translateX(${translateX}px)`,
+        transform: `translateY(${translateY}px)`,
         zIndex: 90,
         pointerEvents: 'none',
       }}
     >
-      {avatarUrl && (
-        <img
-          src={avatarUrl}
+      {avatarSrc && (
+        <Img
+          src={avatarSrc}
           alt={title}
           style={{
-            width: 52,
-            height: 52,
+            width: 44,
+            height: 44,
             borderRadius: '50%',
             objectFit: 'cover',
-            border: `2px solid ${effectiveAccent}`,
+            border: '1px solid rgba(255, 255, 255, 0.3)',
           }}
         />
       )}
       <div style={{ display: 'flex', flexDirection: 'column', opacity: textOpacity }}>
         <div
           style={{
-            fontSize: width * 0.022,
-            fontWeight: 800,
+            fontSize: Math.max(18, Math.round(width * 0.02)),
+            fontWeight: 700,
             color: '#ffffff',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-            letterSpacing: '-0.02em',
+            fontFamily: "'Outfit', 'Montserrat', 'system-ui', -apple-system, sans-serif",
+            letterSpacing: '-0.01em',
+            textShadow: '0 2px 8px rgba(0, 0, 0, 0.8)',
           }}
         >
           {title}
@@ -114,24 +122,21 @@ export const LowerThird: React.FC<LowerThirdProps> = ({
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 12,
-              fontSize: width * 0.014,
-              fontWeight: 500,
+              gap: 10,
+              fontSize: Math.max(13, Math.round(width * 0.013)),
+              fontWeight: 400,
               color: 'rgba(255, 255, 255, 0.85)',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              marginTop: 4,
+              fontFamily: "'Outfit', 'Montserrat', 'system-ui', -apple-system, sans-serif",
+              marginTop: 2,
+              textShadow: '0 1px 4px rgba(0, 0, 0, 0.8)',
             }}
           >
             {subtitle && <span>{subtitle}</span>}
             {handle && (
               <span
                 style={{
-                  backgroundColor: effectiveAccent,
-                  color: '#000000',
-                  fontSize: 13,
-                  fontWeight: 700,
-                  padding: '2px 8px',
-                  borderRadius: 4,
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontWeight: 500,
                 }}
               >
                 {handle}
@@ -143,3 +148,4 @@ export const LowerThird: React.FC<LowerThirdProps> = ({
     </div>
   );
 };
+

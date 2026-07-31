@@ -145,19 +145,19 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
           <div
             style={{
               position: 'absolute',
-              left: 24,
-              ...(labelPosition === 'top' ? { top: 24 } : { bottom: 24 }),
-              padding: '6px 14px',
-              backgroundColor: 'rgba(15, 23, 42, 0.85)',
+              left: 20,
+              ...(labelPosition === 'top' ? { top: 20 } : { bottom: 20 }),
+              padding: '4px 10px',
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
               backdropFilter: 'blur(8px)',
-              border: `1px solid ${handleAccentColor}`,
               borderRadius: 6,
               color: '#ffffff',
-              fontSize: 13,
-              fontWeight: 800,
-              letterSpacing: '0.05em',
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: '0.04em',
               zIndex: 70,
               pointerEvents: 'none',
+              textShadow: '0 1px 4px rgba(0,0,0,0.8)',
               ...labelStyle,
             }}
           >
@@ -166,19 +166,19 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
           <div
             style={{
               position: 'absolute',
-              right: 24,
-              ...(labelPosition === 'top' ? { top: 24 } : { bottom: 24 }),
-              padding: '6px 14px',
-              backgroundColor: 'rgba(15, 23, 42, 0.85)',
+              right: 20,
+              ...(labelPosition === 'top' ? { top: 20 } : { bottom: 20 }),
+              padding: '4px 10px',
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
               backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
               borderRadius: 6,
               color: '#ffffff',
-              fontSize: 13,
-              fontWeight: 800,
-              letterSpacing: '0.05em',
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: '0.04em',
               zIndex: 70,
               pointerEvents: 'none',
+              textShadow: '0 1px 4px rgba(0,0,0,0.8)',
               ...labelStyle,
             }}
           >
@@ -194,10 +194,10 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
           top: 0,
           bottom: 0,
           left: `${currentPos}%`,
-          width: dividerWidth,
-          backgroundColor: handleColor,
+          width: 2,
+          backgroundColor: '#ffffff',
           transform: 'translateX(-50%)',
-          boxShadow: '0 0 12px rgba(0, 0, 0, 0.6)',
+          boxShadow: '0 0 8px rgba(0, 0, 0, 0.5)',
           zIndex: 80,
           pointerEvents: 'none',
         }}
@@ -208,25 +208,26 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            width: 44,
-            height: 44,
+            width: 36,
+            height: 36,
             borderRadius: '50%',
-            backgroundColor: handleColor,
-            border: `3px solid ${handleAccentColor}`,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(255, 255, 255, 0.5)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)',
+            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.4)',
           }}
         >
           {/* Double Chevron Horizontal Arrows SVG */}
           <svg
-            width="22"
-            height="22"
+            width="18"
+            height="18"
             viewBox="0 0 24 24"
             fill="none"
-            stroke={handleAccentColor}
-            strokeWidth="2.5"
+            stroke="#ffffff"
+            strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
           >

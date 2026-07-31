@@ -18,3 +18,5 @@ test_challenge_out/
 test_e2e_workspace_*/
 .DS_Store
 Thumbs.db
+.playwright-mcp/
+

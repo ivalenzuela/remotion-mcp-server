@@ -28,9 +28,9 @@ const RealAudioSpectrum: React.FC<AudioSpectrumProps & { audioSrc: string }> = (
   barCount = 24,
   barWidth,
   barGap = 6,
-  height = 120,
+  height = 80,
   barColor,
-  accentColor = '#38bdf8',
+  accentColor = '#ffffff',
   glowColor,
   mode = 'bars',
 }) => {
@@ -38,7 +38,6 @@ const RealAudioSpectrum: React.FC<AudioSpectrumProps & { audioSrc: string }> = (
   const { fps, width } = useVideoConfig();
 
   const effectiveColor = barColor || accentColor;
-  const effectiveGlow = glowColor || effectiveColor;
   const computedBarWidth = barWidth || Math.max(4, Math.floor(width / (barCount * 3)));
 
   const audioData = useAudioData(audioSrc);
@@ -91,7 +90,7 @@ const RealAudioSpectrum: React.FC<AudioSpectrumProps & { audioSrc: string }> = (
             height: Math.max(6, v * height),
             backgroundColor: effectiveColor,
             borderRadius: computedBarWidth / 2,
-            boxShadow: `0 0 12px ${effectiveGlow}`,
+            boxShadow: glowColor ? `0 0 10px ${glowColor}` : undefined,
             transition: 'height 0.05s ease-out',
           }}
         />
@@ -106,9 +105,9 @@ export const AudioSpectrum: React.FC<AudioSpectrumProps> = (props) => {
     barCount = 24,
     barWidth,
     barGap = 6,
-    height = 120,
+    height = 80,
     barColor,
-    accentColor = '#38bdf8',
+    accentColor = '#ffffff',
     glowColor,
     mode = 'bars',
   } = props;
@@ -121,7 +120,6 @@ export const AudioSpectrum: React.FC<AudioSpectrumProps> = (props) => {
   }
 
   const effectiveColor = barColor || accentColor;
-  const effectiveGlow = glowColor || effectiveColor;
   const computedBarWidth = barWidth || Math.max(4, Math.floor(width / (barCount * 3)));
 
   const samples = Array.from({ length: barCount }).map((_, i) => {
@@ -155,7 +153,7 @@ export const AudioSpectrum: React.FC<AudioSpectrumProps> = (props) => {
             height: Math.max(6, v * height),
             backgroundColor: effectiveColor,
             borderRadius: computedBarWidth / 2,
-            boxShadow: `0 0 12px ${effectiveGlow}`,
+            boxShadow: glowColor ? `0 0 10px ${glowColor}` : undefined,
             transition: 'height 0.05s ease-out',
           }}
         />
