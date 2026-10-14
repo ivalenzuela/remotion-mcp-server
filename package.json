@@ -20,7 +20,7 @@
     "url": "git+https://github.com/ivalenzuela/remotion-mcp-server.git"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@modelcontextprotocol/sdk": "^1.31.0",
     "@remotion/cli": "4.0.496",
     "@remotion/transitions": "4.0.496",
     "remotion": "4.0.496",
